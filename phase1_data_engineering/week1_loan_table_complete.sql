@@ -151,4 +151,26 @@ SELECT
 FROM loan_table
 GROUP BY loan_status, repayment_status
 ORDER BY loan_status, count DESC;
-Week 1 Day 1: Complete loan_table setup — schema, 100K rows, 5 verification checks
+
+
+-- ────────────────────────────────────────────────────────────
+-- BONUS: Interview Q1 — WHERE vs HAVING (Real Risk Example)
+-- Business question: Which regions have default rate above 5%?
+-- This query CANNOT be written with WHERE — requires HAVING
+-- because default_rate_pct is a calculated aggregate value
+-- ────────────────────────────────────────────────────────────
+SELECT
+    region,
+    COUNT(*) AS total_loans,
+    ROUND(100.0 * SUM(CASE WHEN loan_status = 'Defaulted'
+                      THEN 1 ELSE 0 END) / COUNT(*), 2) AS default_rate_pct
+FROM loan_table
+GROUP BY region
+HAVING ROUND(100.0 * SUM(CASE WHEN loan_status = 'Defaulted'
+                         THEN 1 ELSE 0 END) / COUNT(*), 2) > 5.0
+ORDER BY default_rate_pct DESC;
+
+-- RESULT: Brandenburg 5.19%, Berlin 5.16%, Sachsen 5.10%,
+--  Hamburg 5.07%, Hessen 5.02%
+-- INSIGHT: Bayern, NRW, Baden-Württemberg all below 5% threshold
+
